@@ -1,0 +1,82 @@
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRole
+metadata:
+  name: load-generator
+rules:
+- apiGroups: [""]
+  resources:
+  - events
+  - serviceaccounts
+  verbs: ["*"]
+- apiGroups: [""]
+  resources:
+  - pods
+  - services
+  - configmaps
+  verbs: ["*"]
+- apiGroups: ["extensions", "apps"]
+  resources:
+  - daemonsets
+  - deployments
+  - deployments/scale
+  - ingresses
+  verbs: ["*"]
+- apiGroups: ["getambassador.io"]
+  resources: ["*"]
+  verbs: ["*"]
+- apiGroups: ["rbac.authorization.k8s.io"]
+  resources: ["*"]
+  verbs: ["*"]
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: load-generator
+  namespace: default
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: load-generator
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: load-generator
+subjects:
+- kind: ServiceAccount
+  name: load-generator
+  namespace: default
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: load-generator
+  namespace: default
+spec:
+  selector:
+    app: load-generator
+  ports:
+  - port: 80
+    name: http
+    targetPort: http
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: load-generator
+spec:
+  serviceAccountName: load-generator
+  containers:
+  - name: load-generator
+    image: nkrause/max-load:ambassador-test
+    imagePullPolicy: Always
+    ports:
+    - name: http
+      containerPort: 8000
+    env:
+    - name: DURATION
+      value: "60"
+    - name: RPS
+      value: "1000"

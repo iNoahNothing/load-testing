@@ -1,0 +1,4 @@
+50% latency: 1.472792
+90% latency: 1.726724
+95% latency: 2.019119
+99% latency: 5.523101

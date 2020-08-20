@@ -1,0 +1,55 @@
+---
+apiVersion: getambassador.io/v1
+kind: Mapping
+metadata:
+  name: load-testing-base
+  namespace: default
+spec:
+  prefix: /load-testing/
+  service: load-http-echo
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: load-http-echo
+  namespace: default
+spec:
+  selector:
+    app: load-http-echo
+  ports:
+  - port: 80
+    name: http
+    targetPort: 5678
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: load-http-echo
+  namespace: default
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: load-http-echo
+  template:
+    metadata:
+      labels:
+        app: load-http-echo
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchLabels:
+                  app: load-http-echo
+              topologyKey: kubernetes.io/hostname
+      containers:
+      - name: qotm
+        image: hashicorp/http-echo
+        args:
+          - "-text='hello world'"
+        ports:
+        - name: http-api
+          containerPort: 5678
