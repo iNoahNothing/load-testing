@@ -1,6 +1,8 @@
 # Loadtesting Methodology
 
-Microservice workloads in Kubernetes are fundamentally different than 
+Microservice workloads in Kubernetes are fundamentally different than traditional monlithic application. Connection management is more important since there are more upstream services than an API GW will be serving within a microservice application.
+
+This load test is meant to test the performance of API GW and ingress controllers in Kubernetes. It focuses on the per-request latency of an ingress when handling a steady load over a period of time.
 
 Due to the nature of the number of network proxies that can be in front of Kubernetes, a load test of purely how the API GW is performing should be done **inside** your cluster. This means the load generator, API GW, and backend should all be scheduled on nodes in your cluster and all of the requests sent over in-cluster network interfaces. This will give a fair understanding of how the API GW is performing without needing to worry about how technologies outside of Kubernetes are impacting it.
 
